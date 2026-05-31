@@ -91,9 +91,9 @@ func setup(ctx context.Context, modelName string, maxStepsOverride int, requireK
 	})
 }
 
-// setupQuiet is like setup but suppresses plugin subprocess stderr output.
-// Used during model switch inside a bubbletea session to prevent plugin logs
-// from corrupting the TUI's terminal raw mode.
+// setupQuiet is like setup but suppresses all diagnostic output (plugin stderr,
+// skill warnings, sandbox notices) to prevent corrupting the TUI's terminal raw
+// mode during model switch inside a bubbletea session.
 func setupQuiet(ctx context.Context, modelName string, maxStepsOverride int, requireKey bool, sink event.Sink) (*control.Controller, error) {
 	return boot.Build(ctx, boot.Options{
 		Model:      modelName,
