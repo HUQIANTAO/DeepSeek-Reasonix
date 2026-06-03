@@ -54,6 +54,9 @@ func New(cfg provider.Config) (provider.Provider, error) {
 				}).DialContext,
 				TLSHandshakeTimeout:   15 * time.Second,
 				ResponseHeaderTimeout: 120 * time.Second, // models can think for a while before the first token
+				MaxIdleConns:          100,
+				MaxIdleConnsPerHost:   10,
+				IdleConnTimeout:       90 * time.Second,
 			},
 		},
 	}, nil
