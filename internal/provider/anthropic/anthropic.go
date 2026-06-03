@@ -27,6 +27,7 @@ import (
 	"math/rand"
 	"net/http"
 	"strings"
+	"sync"
 	"time"
 
 	"reasonix/internal/provider"
@@ -90,11 +91,22 @@ type client struct {
 
 func (c *client) Name() string { return c.name }
 
+// bufPool reuses byte buffers for JSON-marshalled request bodies, reducing GC
+// churn from repeated alloc/free of ~10-100KB buffers per turn.
+var bufPool = sync.Pool{
+	New: func() any { return new(bytes.Buffer) },
+}
+
 func (c *client) Stream(ctx context.Context, req provider.Request) (<-chan provider.Chunk, error) {
-	body, err := json.Marshal(c.buildRequest(req))
-	if err != nil {
+	buf := bufPool.Get().(*bytes.Buffer)
+	buf.Reset()
+	if err := json.NewEncoder(buf).Encode(c.buildRequest(req)); err != nil {
+		bufPool.Put(buf)
 		return nil, fmt.Errorf("%s: marshal request: %w", c.name, err)
 	}
+	body := make([]byte, buf.Len())
+	copy(body, buf.Bytes())
+	bufPool.Put(buf)
 
 	resp, err := c.sendWithRetry(ctx, body)
 	if err != nil {
