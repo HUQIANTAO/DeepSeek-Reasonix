@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { memo, useState } from "react";
 import { ChevronRight } from "lucide-react";
 import { Markdown } from "./Markdown";
 import { CopyButton } from "./CopyButton";
@@ -7,7 +7,7 @@ import type { Item } from "../lib/useController";
 
 type AssistantItem = Extract<Item, { kind: "assistant" }>;
 
-export function UserMessage({
+export const UserMessage = memo(function UserMessage({
   text,
   turn,
   open,
@@ -47,9 +47,9 @@ export function UserMessage({
       )}
     </div>
   );
-}
+});
 
-export function AssistantMessage({ item }: { item: AssistantItem }) {
+export const AssistantMessage = memo(function AssistantMessage({ item }: { item: AssistantItem }) {
   const t = useT();
   const [open, setOpen] = useState(false);
   return (
@@ -86,4 +86,4 @@ export function AssistantMessage({ item }: { item: AssistantItem }) {
       )}
     </div>
   );
-}
+});

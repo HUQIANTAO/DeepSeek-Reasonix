@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { Item } from "../lib/useController";
 import { AssistantMessage, UserMessage } from "./Message";
 import { ToolCard } from "./ToolCard";
@@ -58,14 +58,19 @@ export function Transcript({
 
   // Sub-agent calls carry a parentId; collect them under their parent `task`
   // call so the parent card can render them nested, and skip them at top level.
-  const subcallsByParent = new Map<string, ToolItem[]>();
-  for (const it of items) {
-    if (it.kind === "tool" && it.parentId) {
-      const arr = subcallsByParent.get(it.parentId) ?? [];
-      arr.push(it);
-      subcallsByParent.set(it.parentId, arr);
+  // Memoized so the map identity is stable when items haven't changed, which
+  // lets React.memo on ToolCard skip re-renders for unchanged cards.
+  const subcallsByParent = useMemo(() => {
+    const map = new Map<string, ToolItem[]>();
+    for (const it of items) {
+      if (it.kind === "tool" && it.parentId) {
+        const arr = map.get(it.parentId) ?? [];
+        arr.push(it);
+        map.set(it.parentId, arr);
+      }
     }
-  }
+    return map;
+  }, [items]);
 
   // The rewind menu's open state is lifted here so at most one is open at a time;
   // a mousedown outside any .rewind closes it.
