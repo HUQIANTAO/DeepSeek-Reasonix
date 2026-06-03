@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useDeferredValue, useMemo, useState } from "react";
 import { SquarePen, Brain, History, Settings as SettingsIcon } from "lucide-react";
 import { useT } from "./lib/i18n";
 import { useController } from "./lib/useController";
@@ -13,7 +13,7 @@ import { HistoryPanel } from "./components/HistoryPanel";
 import { SettingsPanel } from "./components/SettingsPanel";
 import { UpdateBanner } from "./components/UpdateBanner";
 import { parseTodos } from "./lib/tools";
-import type { MemoryView, Mode, SessionMeta } from "./lib/types";
+import type { Item, MemoryView, Mode, SessionMeta } from "./lib/types";
 
 export default function App() {
   const {
@@ -70,6 +70,13 @@ export default function App() {
     },
     [setModel, mode, setPlan, setBypass],
   );
+
+  // useDeferredValue lets React prioritise Composer input (high-priority) over
+  // Transcript re-renders (low-priority) during streaming. When a text delta
+  // arrives while the user is typing, React processes the keystroke first and
+  // defers the transcript update to idle time — keeping the input responsive
+  // even during long tool-heavy turns with dozens of items.
+  const deferredItems = useDeferredValue(state.items);
 
   // The live task list pinned above the composer comes from the most recent
   // top-level todo_write call; it stays visible while work remains, clears itself
@@ -216,7 +223,7 @@ export default function App() {
             <span className="loading-screen__text">{t("common.loading")}</span>
           </div>
         ) : (
-          <Transcript items={state.items} onPrompt={send} onRewind={rewind} />
+          <Transcript items={deferredItems} onPrompt={send} onRewind={rewind} />
         )}
       </main>
 
