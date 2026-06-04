@@ -2162,3 +2162,46 @@ body {
   color: var(--fg);
   background: var(--hover);
 }
+
+/* HistoryPanel search: a compact full-width input below the drawer
+   header. Reuses the chip / border tokens so it sits in the chrome
+   without a fresh style sheet. The icon sits absolutely-positioned on
+   the left, the input is padded to clear it. */
+.hist-search {
+  position: relative;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border-soft);
+}
+.hist-search__icon {
+  position: absolute;
+  left: 22px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--fg-faint);
+  pointer-events: none;
+}
+.hist-search__input {
+  width: 100%;
+  padding: 6px 8px 6px 26px;
+  font: inherit;
+  font-size: 12.5px;
+  color: var(--fg);
+  background: var(--bg-soft);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+}
+.hist-search__input::placeholder {
+  color: var(--fg-faint);
+}
+.hist-search__input:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+  border-color: var(--accent);
+}
+.drawer__hint {
+  margin-left: auto;
+  margin-right: 8px;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--fg-faint);
+}

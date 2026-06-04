@@ -90,6 +90,7 @@ export const zh: Record<DictKey, string> = {
   "history.rename": "重命名",
   "history.today": "今天",
   "history.yesterday": "昨天",
+  "history.searchPlaceholder": "按标题、预览或路径筛选会话…",
 
   // 记忆抽屉
   "memory.title": "记忆",

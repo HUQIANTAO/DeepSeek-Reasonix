@@ -89,6 +89,7 @@ export const en = {
   "history.rename": "Rename",
   "history.today": "Today",
   "history.yesterday": "Yesterday",
+  "history.searchPlaceholder": "Filter sessions by title, preview, or path…",
 
   // memory drawer
   "memory.title": "Memory",

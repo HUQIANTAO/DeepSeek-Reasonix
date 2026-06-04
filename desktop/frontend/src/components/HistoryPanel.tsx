@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Pencil, Trash2, Check, X } from "lucide-react";
+import { useMemo, useState } from "react";
+import { Pencil, Trash2, Check, X, Search } from "lucide-react";
 import { t, useT } from "../lib/i18n";
 import type { SessionMeta } from "../lib/types";
 
@@ -25,6 +25,22 @@ export function HistoryPanel({
   const [editing, setEditing] = useState<string | null>(null);
   const [draft, setDraft] = useState("");
   const [confirming, setConfirming] = useState<string | null>(null);
+  // Substring search across the rendered fields (title, preview, path).
+  // Case-insensitive, no regex (avoids the user pasting an unclosed paren
+  // and getting an empty list with no visible reason). The matching is
+  // OR over the candidate fields, so "lint script" finds a session titled
+  // "lint" whose preview mentions "script".
+  const [query, setQuery] = useState("");
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return sessions;
+    return sessions.filter(
+      (s) =>
+        (s.title && s.title.toLowerCase().includes(q)) ||
+        (s.preview && s.preview.toLowerCase().includes(q)) ||
+        s.path.toLowerCase().includes(q),
+    );
+  }, [sessions, query]);
 
   const startRename = (s: SessionMeta) => {
     setConfirming(null);
@@ -39,7 +55,7 @@ export function HistoryPanel({
   // Sessions arrive newest-first; bucket consecutive ones under a day heading
   // (Today / Yesterday / a date) while preserving that order.
   const groups: { label: string; items: SessionMeta[] }[] = [];
-  for (const s of sessions) {
+  for (const s of filtered) {
     const label = dayLabel(s.modTime);
     const last = groups[groups.length - 1];
     if (last && last.label === label) last.items.push(s);
@@ -51,10 +67,25 @@ export function HistoryPanel({
       <aside className="drawer" onClick={(e) => e.stopPropagation()}>
         <header className="drawer__head">
           <div className="drawer__title">{tr("history.title")}</div>
+          <span className="drawer__hint">
+            {query ? `${filtered.length} / ${sessions.length}` : `${sessions.length}`}
+          </span>
           <button className="chip" onClick={onClose} title={tr("common.close")}>
             ✕
           </button>
         </header>
+        <div className="hist-search">
+          <Search size={12} className="hist-search__icon" aria-hidden="true" />
+          <input
+            className="hist-search__input"
+            placeholder={tr("history.searchPlaceholder")}
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            spellCheck={false}
+            autoComplete="off"
+            aria-label={tr("history.searchPlaceholder")}
+          />
+        </div>
 
         <div className="drawer__body">
           {sessions.length === 0 ? (
