@@ -2162,3 +2162,112 @@ body {
   color: var(--fg);
   background: var(--hover);
 }
+
+/* CrashOverlay: a full-viewport friendly error view rendered when a
+   render-time error escapes the React tree. The card is centered, with
+   an alert icon, the error message, a "Reload" CTA, a "Copy diagnostics"
+   button (so the user can paste a redacted stack into a bug report),
+   and a collapsible <details> for the full stack. */
+.crash {
+  position: fixed;
+  inset: 0;
+  z-index: 9000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg);
+  padding: 24px;
+}
+.crash__card {
+  width: min(520px, 100%);
+  padding: 28px 24px 22px;
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: 0 16px 50px rgba(0, 0, 0, 0.45);
+  text-align: center;
+}
+.crash__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  margin-bottom: 12px;
+  background: var(--del-bg);
+  color: var(--err);
+  border-radius: 50%;
+}
+.crash__title {
+  margin: 0 0 6px;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--fg);
+}
+.crash__msg {
+  margin: 0 0 4px;
+  font-size: 13px;
+  color: var(--fg);
+  font-family: var(--mono);
+  word-break: break-word;
+}
+.crash__hint {
+  margin: 0 0 18px;
+  font-size: 12.5px;
+  color: var(--fg-dim);
+}
+.crash__actions {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  margin-bottom: 14px;
+}
+.crash__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  font-size: 12.5px;
+  color: var(--fg-dim);
+  background: var(--bg-soft);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  cursor: pointer;
+}
+.crash__btn:hover {
+  color: var(--fg);
+  background: var(--bg-elev-2);
+}
+.crash__btn--primary {
+  color: var(--accent-fg);
+  background: var(--accent);
+  border-color: var(--accent);
+}
+.crash__btn--primary:hover {
+  filter: brightness(1.05);
+}
+.crash__details {
+  text-align: left;
+  margin-top: 8px;
+  font-size: 11.5px;
+  color: var(--fg-dim);
+}
+.crash__details summary {
+  cursor: pointer;
+  padding: 4px 0;
+  user-select: none;
+}
+.crash__details pre {
+  margin: 6px 0 0;
+  padding: 8px 10px;
+  font-family: var(--mono);
+  font-size: 10.5px;
+  background: var(--bg-soft);
+  border: 1px solid var(--border-soft);
+  border-radius: 5px;
+  max-height: 180px;
+  overflow: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+  color: var(--fg);
+}

@@ -1,6 +1,7 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import App from "./App";
+import { CrashOverlay } from "./components/CrashOverlay";
 import { LocaleProvider } from "./lib/i18n";
 import { initTheme } from "./lib/theme";
 import "./styles.css";
@@ -22,10 +23,17 @@ if (typeof window !== "undefined" && window.runtime) {
 const root = document.getElementById("root");
 if (!root) throw new Error("missing #root");
 
+// The ErrorBoundary wraps the whole tree. A render-time exception in any
+// component (a bad markdown render, an unhandled prop in a panel) is
+// caught here and surfaces a full-page friendly recovery view instead
+// of leaving the user staring at a blank window. The chat transcript
+// is on disk, so a Reload restores the session from kernel state.
 createRoot(root).render(
   <StrictMode>
-    <LocaleProvider>
-      <App />
-    </LocaleProvider>
+    <CrashOverlay>
+      <LocaleProvider>
+        <App />
+      </LocaleProvider>
+    </CrashOverlay>
   </StrictMode>,
 );
