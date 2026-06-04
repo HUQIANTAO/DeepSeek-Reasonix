@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { ArrowDown } from "lucide-react";
 import type { Item } from "../lib/useController";
 import { AssistantMessage, UserMessage } from "./Message";
 import { ToolCard } from "./ToolCard";
@@ -34,27 +35,67 @@ export function Transcript({
   // stick tracks whether the view is pinned to the bottom; once the user scrolls
   // up to read, we stop yanking them back down.
   const stick = useRef(true);
+  // newWhileAway counts the items appended while the user was scrolled up. The
+  // jump-to-bottom button shows this as a small badge; clicking the button
+  // scrolls to the bottom and resets both the stick flag and the count.
+  const newWhileAway = useRef(0);
+  // showJump is the React state mirror of `stick`. We use state (not just the
+  // ref) because the button is a render output, and React only re-renders on
+  // state transitions. The ref drives the behavior; the state drives the view.
+  const [showJump, setShowJump] = useState(false);
 
   const onScroll = () => {
     const el = scrollRef.current;
-    if (el) stick.current = el.scrollHeight - el.scrollTop - el.clientHeight < 80;
+    if (!el) return;
+    const near = el.scrollHeight - el.scrollTop - el.clientHeight < 80;
+    stick.current = near;
+    if (near) {
+      // The user scrolled back to the bottom — clear the badge. The button's
+      // visibility follows the same path; we collapse it here so the user
+      // doesn't see "0" lingering as they continue reading from the bottom.
+      if (newWhileAway.current > 0) newWhileAway.current = 0;
+      if (showJump) setShowJump(false);
+    } else {
+      if (!showJump) setShowJump(true);
+    }
+  };
+
+  const jumpToBottom = () => {
+    const el = scrollRef.current;
+    if (!el) return;
+    el.scrollTop = el.scrollHeight;
+    stick.current = true;
+    newWhileAway.current = 0;
+    setShowJump(false);
   };
 
   // Follow new content by setting scrollTop directly (no scrollIntoView fighting
   // the browser's scroll anchoring), and inside rAF so layout has settled first —
   // together with plain-text streaming this keeps the view from jittering. The
   // dependency tracks rendered content, not just array identity, so streaming
-  // still follows the bottom if a reducer reuses the items array.
+  // still follows the bottom if a reducer reuses the items array. When the
+  // user is scrolled UP, we don't yank them back; instead we tally the new
+  // items into `newWhileAway` so the jump-to-bottom button can show a badge.
   const contentVersion = scrollVersion(items);
   useEffect(() => {
-    if (!stick.current) return;
+    if (!stick.current) {
+      // Count the new content while scrolled away. We don't have item id → new
+      // without a diff; for the badge a simple "items grew" counter is enough.
+      // The exact value isn't load-bearing (it just signals "stuff happened"),
+      // so we cap at 99 to avoid a 5-digit badge on a 1k-item import.
+      newWhileAway.current = Math.min(99, newWhileAway.current + 1);
+      // Force a re-render so the badge updates. setShowJump(true) is a no-op
+      // for visibility (already true) but it does flip React's render queue.
+      if (!showJump) setShowJump(true);
+      return;
+    }
     const el = scrollRef.current;
     if (!el) return;
     const id = requestAnimationFrame(() => {
       el.scrollTop = el.scrollHeight;
     });
     return () => cancelAnimationFrame(id);
-  }, [contentVersion]);
+  }, [contentVersion, showJump]);
 
   // Sub-agent calls carry a parentId; collect them under their parent `task`
   // call so the parent card can render them nested, and skip them at top level.
@@ -90,6 +131,22 @@ export function Transcript({
 
   return (
     <div className="transcript" ref={scrollRef} onScroll={onScroll}>
+      {showJump && (
+        <button
+          type="button"
+          className="transcript__jump"
+          onClick={jumpToBottom}
+          title="Jump to latest"
+          aria-label="Jump to latest message"
+        >
+          <ArrowDown size={13} />
+          {newWhileAway.current > 0 && (
+            <span className="transcript__jump-count" aria-hidden="true">
+              {newWhileAway.current > 99 ? "99+" : newWhileAway.current}
+            </span>
+          )}
+        </button>
+      )}
       {items.length === 0 && <Welcome onPrompt={onPrompt} />}
 
       {items.map((it) => {

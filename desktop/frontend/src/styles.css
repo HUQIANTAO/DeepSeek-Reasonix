@@ -2162,3 +2162,45 @@ body {
   color: var(--fg);
   background: var(--hover);
 }
+
+/* Jump-to-bottom floating action button. Anchored to the bottom-right
+   of the transcript, opacity-fades on .transcript:hover so it doesn't
+   dominate the view when the user is reading. The little count badge
+   uses the accent color so a high count is visible at a glance. */
+.transcript__jump {
+  position: sticky;
+  bottom: 12px;
+  float: right;
+  margin-right: 16px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 9px;
+  font-size: 11.5px;
+  color: var(--fg);
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
+  cursor: pointer;
+  transition: opacity 0.15s, transform 0.15s;
+  z-index: 4;
+}
+.transcript__jump:hover {
+  background: var(--bg-elev-2);
+  transform: translateY(-1px);
+}
+.transcript__jump-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  font-size: 10px;
+  font-family: var(--mono);
+  color: var(--accent-fg);
+  background: var(--accent);
+  border-radius: 8px;
+  font-weight: 600;
+}
